@@ -26,7 +26,7 @@ import tensorflow as tf
 df = pd.read_csv('mammographic_masses.csv', sep=',', header=None)
 df.shape
 Out[8]: (961, 6)
-newdf <- df.replace(to.replace=‘?’,value=‘ ‘)
+newdf = df.replace(to_replace=‘?’,value=‘ ‘)
 ```````````
 Our next task is to determine the number of missing or mistyped values for each categorical predictive feature. 
 `````````
@@ -80,7 +80,11 @@ df1 = df1[df1.age != ‘ ‘]
 df1.shape
   (953,6)
 ````````
-The number of missing values for shape, margin and density are fairly large.  We now determine the number of instances with missing values for at least one of "shape","margin" or "density."
+We will analyze "age" as a numerical feature, so we convert it accordingly.
+````````
+df1['age'] = pd.to_numeric(df1['age'], errors='coerce')
+````````
+Later we will augment "df1" by filling in its missing values using probability distributions, and afterwards apply a neural net to a training subset.  Before that, we trim away the instances with missing values for at least one of "shape","margin" or "density."
 ````````
 dfs = df1[df1["shape"] != ' ']
 dfm = dfs[dfs["margin"] != ' ']
@@ -88,7 +92,8 @@ dfd = dfm[dfm["density"] != ' ']
 dfd.shape
   (829, 6)
 ````````
-It follows that 124 of the 953 instances in df1 have at least 1 missing value; this justifies filling in the missing values.  We will do this using probabilities that condition on "birad" and "age", neither of which have missing values in df1.  First we produce a histogram for "age."
+It follows that 124 of the 953 instances in "df1" have at least 1 missing value, so that imputation is necessary.  Although "dfd" is big enough to use as a training set, we will not do so (in order to avoid convenience sampling).  Since all the input features other than "age" are categorical, we will partition "dfd" into age quartiles and condition on these together with the categorical inputs.
+
 
           
 
